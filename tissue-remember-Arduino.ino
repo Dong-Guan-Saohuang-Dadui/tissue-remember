@@ -48,6 +48,14 @@ String jsonToSend;
 float sensor_tem, sensor_hum, sensor_lux;                    //传感器温度、湿度、光照   
 char  sensor_tem_c[7], sensor_hum_c[7], sensor_lux_c[7] ;    //换成char数组传输
 #include <SoftwareSerial.h>
+
+#include <Microduino_ColorLED.h>
+#define PIN            D4         //彩灯引脚
+#define NUMPIXELS      7        //级联彩灯数量
+#define val_max 255
+#define val_min 0
+ColorLED strip = ColorLED(NUMPIXELS, PIN); //将ColorLED类命名为strip，并定义彩灯数量和彩灯引脚号
+
 #define EspSerial mySerial
 #define UARTSPEED  9600
 SoftwareSerial mySerial(2, 3); /* RX:D3, TX:D2 */
@@ -63,10 +71,14 @@ String postString;                                //用于存储发送数据的�
 Tem_Hum_S2 TempMonitor;
 
 void setup(void)     //初始化函数  
-{       
+{   
+  strip.begin();                 //彩灯初始化
+  strip.show();    
   //初始化串口波特率  
     Wire.begin();
     Serial.begin(115200);
+  pinMode(6, OUTPUT);
+  digitalWrite(6, LOW);
     while (!Serial); // wait for Leonardo enumeration, others continue immediately
     Serial.print(F("setup begin\r\n"));
     delay(100);
@@ -182,5 +194,39 @@ jsonToSend="{\"Temperature\":";
   
   } else {
     Serial.print("create tcp err\r\n");
+    Serial.print(sensor_lux);
   }
+  if(sensor_lux>1){
+     rainbow(20);
+     analogWrite(6,200);
+    }
+    else
+    {   
+     analogWrite(4, LOW);
+      }
+}
+void rainbow(uint8_t wait) {
+  uint16_t i, j;
+  for (j = 0; j < 256; j++) {
+    for (i = 0; i < strip.numPixels(); i++) {
+      strip.setPixelColor(i, Wheel((i + j) & 255));
+    }
+    strip.show();
+    delay(wait);
+  }
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
