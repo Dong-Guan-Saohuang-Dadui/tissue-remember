@@ -196,13 +196,14 @@ jsonToSend="{\"Temperature\":";
     Serial.print("create tcp err\r\n");
     Serial.print(sensor_lux);
   }
-  if(sensor_lux>1){
+  if(sensor_lux>500){   
      rainbow(20);
      analogWrite(6,200);
     }
     else
     {   
-     analogWrite(4, LOW);
+     analogWrite(6, LOW);
+     rainbow(0);
       }
 }
 void rainbow(uint8_t wait) {
@@ -230,3 +231,9 @@ uint32_t Wheel(byte WheelPos) {
   WheelPos -= 170;
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
+
+
+
+
+
+
